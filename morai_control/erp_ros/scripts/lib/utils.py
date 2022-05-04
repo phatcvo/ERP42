@@ -8,8 +8,8 @@ import numpy as np
 from math import cos,sin,sqrt,pow,atan2,pi
 import tf
 
-
-class pathReader :  ## 텍스트 파일에서 경로를 출력 ##
+## output path from text file ##################################
+class pathReader :
     def __init__(self,pkg_name):
         rospack=rospkg.RosPack()
         self.file_path=rospack.get_path(pkg_name)
@@ -37,14 +37,12 @@ class pathReader :  ## 텍스트 파일에서 경로를 출력 ##
         
         
         openFile.close()
-        return out_path ## 읽어온 경로를 global_path로 반환 ##
+        return out_path ## Returns the read path as global_path ##
       
 
-
-
-
-
-def findLocalPath(ref_path,status_msg): ## global_path와 차량의 status_msg를 이용해 현재waypoint와 local_path를 생성 ##
+################################################################
+## Create current waypoint and local_path using global_path and vehicle status_msg ##
+def findLocalPath(ref_path,status_msg): 
     out_path=Path()
     current_x=status_msg.position.x
     current_y=status_msg.position.y
@@ -79,10 +77,10 @@ def findLocalPath(ref_path,status_msg): ## global_path와 차량의 status_msg�
         tmp_pose.pose.orientation.w=1
         out_path.poses.append(tmp_pose)
 
-    return out_path,current_waypoint ## local_path와 waypoint를 반환 ##
+    return out_path,current_waypoint ## local_path, waypoint##
 
 
-
+################################################################
 class velocityPlanning :
     def __init__(self,car_max_speed,road_friction):
         self.car_max_speed=car_max_speed
@@ -123,7 +121,10 @@ class velocityPlanning :
         return out_vel_plan
 
 
-class purePursuit : ## purePursuit 알고리즘 적용 ##
+################################################################
+## path tracking approach ######################################
+## purePursuit controller ######################################
+class purePursuit : 
     def __init__(self):
         self.forward_point=Point()
         self.current_postion=Point()
@@ -138,17 +139,18 @@ class purePursuit : ## purePursuit 알고리즘 적용 ##
         self.path=msg  #nav_msgs/Path 
     
     
+    ## current coordinate of the vehicle ######################
     def getEgoStatus(self,msg):
 
         self.current_vel=msg.velocity  #kph
         self.vehicle_yaw=(msg.heading)/180*pi   # rad
-        self.current_postion.x=msg.position.x ## 차량의 현재x 좌표 ##
-        self.current_postion.y=msg.position.y ## 차량의 현재y 좌표 ##
-        self.current_postion.z=msg.position.z ## 차량의 현재z 좌표 ##
+        self.current_postion.x=msg.position.x 
+        self.current_postion.y=msg.position.y 
+        self.current_postion.z=msg.position.z 
 
 
-
-    def steering_angle(self): ## purePursuit 알고리즘을 이용한 Steering 계산 ## 
+    ## Steering calculation using purePursuit algorithm ##
+    def steering_angle(self):
         vehicle_position=self.current_postion
         rotated_point=Point()
         self.is_look_forward_point= False
@@ -183,11 +185,12 @@ class purePursuit : ## purePursuit 알고리즘 적용 ##
 
         if self.is_look_forward_point :
             self.steering=atan2((2*self.vehicle_length*sin(theta)),self.lfd)*180/pi #deg
-            return self.steering ## Steering 반환 ##
+            return self.steering
         else : 
             print("no found forward point")
             return 0
 
+################################################################
 class cruiseControl:
     def __init__(self,object_vel_gain,object_dis_gain):
         self.object=[False,0]
@@ -304,10 +307,10 @@ class mgko_obj :
         self.velocity=[]
         self.object_type=[]
         
-        
 
-
-class vaildObject : ## 장애물 유무 확인 (차량, 사람, 정지선 신호) ##
+################################################################     
+## Check for obstacles (vehicle, person, stop line signal) #####
+class vaildObject : 
 
     def __init__(self,stop_line=[]):
         self.stop_line=stop_line
@@ -353,7 +356,10 @@ class vaildObject : ## 장애물 유무 확인 (차량, 사람, 정지선 신호
 
         return global_object_info,loal_object_info
 
-class pidController : ## 속도 제어를 위한 PID 적용 ##
+
+################################################################
+## Velocity controller using pidController #####################
+class pidController : 
     def __init__(self):
         self.p_gain=0.1
         self.i_gain=0.0
@@ -374,8 +380,10 @@ class pidController : ## 속도 제어를 위한 PID 적용 ##
         self.prev_error=error
         return output
 
-########################  lattice  ########################
 
+################################################################
+## Graph- based approach #######################################
+## lattice  ####################################################
 def latticePlanner(ref_path,global_vaild_object,vehicle_status,current_lane):
     out_path=[]
     selected_lane=-1
@@ -513,4 +521,4 @@ def latticePlanner(ref_path,global_vaild_object,vehicle_status,current_lane):
 
     return out_path,selected_lane
 
-########################  lattice  ########################
+################################################################
