@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import sys,os
 import rospy
@@ -20,7 +20,6 @@ class erp_planner():
         self.path_name=arg[1]
         self.traffic_control=arg[2]
         
-
 
         #publisher
         global_path_pub= rospy.Publisher('/global_path',Path, queue_size=1)
@@ -45,7 +44,8 @@ class erp_planner():
         self.is_status=False
         self.is_obj=False
         self.is_traffic=False
-        self.traffic_info = [[58.50, 1180.41 ,'C119BS010001'], ##신호등 정보(global_x, global_y, index)
+        ## traffic light information (global_x, global_y, index)
+        self.traffic_info = [[58.50, 1180.41 ,'C119BS010001'], 
                              [85.61, 1227.88 ,'C119BS010021'],
                              [136.58,1351.98 ,'C119BS010025'],
                              [141.02,1458.27 ,'C119BS010028'],
@@ -83,6 +83,7 @@ class erp_planner():
         self.object_info_msg=ObjectStatusList()
         self.status_msg=EgoVehicleStatus()
 
+        # vel_planner=velocityPlanning(90/3.6,1.5)
         vel_planner=velocityPlanning(60/3.6,1.5)
         vel_profile=vel_planner.curveBasedVelocity(self.global_path,100)
 
@@ -137,7 +138,8 @@ class erp_planner():
                 ctrl_msg.velocity=cc_vel
                 
 
-                control_input=pid.pid(target_velocity,self.status_msg.velocity) ## 속도 제어를 위한 PID 적용 (target Velocity, Status Velocity)
+                ## Speed cotnrol using PID (target Velocity, Status Velocity)
+                control_input=pid.pid(target_velocity,self.status_msg.velocity)
                 
                 if control_input > 0 :
                     ctrl_msg.accel= control_input
@@ -147,9 +149,9 @@ class erp_planner():
                     ctrl_msg.accel= 0
                     ctrl_msg.brake= -control_input
 
-                if self.status_msg.velocity < 3.0  and target_velocity<=0.0:
-                    ctrl_msg.accel=0
-                    ctrl_msg.brake=1
+                #if self.status_msg.velocity < 3.0  and target_velocity<=0.0:
+                #    ctrl_msg.accel=0
+                #    ctrl_msg.brake=1
                 
 
                 local_path_pub.publish(local_path)
@@ -187,7 +189,6 @@ class erp_planner():
             print('traffic index : {}'.format(self.tl_msg.trafficLightIndex))
             print('traffic type : {}'.format(self.tl_msg.trafficLightType))
             print('traffic status : {}'.format(self.tl_msg.trafficLightStatus))
-
 
     def statusCB(self,data):
         self.status_msg=EgoVehicleStatus()
