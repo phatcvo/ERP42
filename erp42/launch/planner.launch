@@ -1,0 +1,8 @@
+<launch>
+        <node pkg="erp42" type="mgeo_pub.py" name ="MGeo_Map" output="screen" />     
+        <node pkg="erp42" type="global_path_pub.py" name="global_planning" output="screen" />
+        <node pkg="erp42" type="local_path_pub.py" name="local_planning" output="screen" />
+        <node pkg="erp42" type="Main_AD2.py" name="Main_planner" args="multi-lane2 True" output="screen" />
+        <node pkg="rviz" type="rviz" name="rviz" args="-d $(find erp42)/rviz/planner.rviz" />
+
+</launch>
