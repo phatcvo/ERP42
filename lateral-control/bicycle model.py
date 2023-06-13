@@ -1,6 +1,5 @@
 import math
 import pygame
-# from Vec2d import Vec2d
 pygame.init()
 
 done = False
