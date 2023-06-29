@@ -2,7 +2,6 @@
 
 ### Notes
 - The algorithm does not utilize the cones' color information, but instead a simple logic is used, which rewards the branches with cones from both sides (see findBestBranch(...) method), and penalizes the branches having cones only from one side. With cone classification information a better rating system can be implemented and applied.
-- Unfortunately I wasn't able to test and see this algorithm working on real hardware, a FS Driverless car, so I am excited if you can bring it the reality on any mobile robot and share some videos with me (see section **Usage**)
 
 
 ## Inputs, outputs, params
@@ -10,6 +9,8 @@
 #### Inputs
 - rospy.Subscriber("/map", Map, ...)
 - rospy.Subscriber("/odometry", Odometry, ...)
+- rospy.Subscriber("/track", Track, ...)
+- rospy.Subscriber("/newwaypoints", WaypointsArray, ...)
 
 #### Outputs
 - rospy.Publisher("/waypoints", WaypointsArray, ...)
@@ -27,20 +28,4 @@
 - expandAngle = 20 deg - constraining angle for next tree nodes
 - coneObstacleSize = 1.1 m - size of obstacles derived from cone position
 - coneTargetsDistRatio = 0.5 - ratio to frontConesDist for deriving remote cone goals
-
-
-
-
-#### Inputs
-- rospy.Subscriber("/track", Track, ...)
-- rospy.Subscriber("/newwaypoints", WaypointsArray, ...)
-
-#### Outputs
-- rospy.Publisher("/waypoints", WaypointsArray, ...)
-
-#### Outputs (Visuals)
-- Same as the original
-
-#### Parameters to tune (main)
-- Same as the original
 
