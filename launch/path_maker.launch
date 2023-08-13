@@ -1,0 +1,6 @@
+<launch>
+	<!-- args = "(folder name where the path is created) (filename of the path to be created)" -->
+	<!--node pkg="erp_py" type="path_maker.py" name="maker" args="path path_name" output="screen"/-->
+	<node pkg="erp_py" type="path_maker.py" name="maker" args="path newpath3" output="screen"/>
+ 
+</launch>
