@@ -13,7 +13,7 @@ from math import pi
 import rospkg
 from geometry_msgs.msg import PoseStamped,Point
 from math import cos,sin,sqrt,pow,atan2,pi
-
+import numpy as np
 
 
 ## output path from text file ##################################
@@ -239,6 +239,7 @@ class erp_planner():
 
             
             global_path_pub.publish(self.global_path)
+            
 
             self.count+=1
 
@@ -255,9 +256,34 @@ class erp_planner():
         self.is_status=True                 
 
         
-
+class ERP42Model:
+    def __init__(self, wheelbase):
+        self.wheelbase = wheelbase  # Distance between front and rear axles
+        self.x = 0.0  # Initial x position
+        self.y = 0.0  # Initial y position
+        self.theta = 0.0  # Initial heading angle
+        self.v = 0.0  # Initial velocity
+        self.delta = 0.0  # Initial steering angle
+        
+    def update(self, delta, dt):
+        # Update the vehicle state based on the control input delta (steering angle) and time step dt
+        self.delta = delta
+        
+        # Calculate the change in vehicle state using kinematic bicycle model equations
+        self.x += self.v * np.cos(self.theta) * dt
+        self.y += self.v * np.sin(self.theta) * dt
+        self.theta += self.v / self.wheelbase * np.tan(self.delta) * dt
+        
+    def set_velocity(self, v):
+        self.v = v
+        
+    def get_state(self):
+        return self.x, self.y, self.theta
     
 if __name__ == '__main__':
+    
+
+    
     try:
         kcity_pathtracking=erp_planner()
     except rospy.ROSInterruptException:

@@ -6,14 +6,24 @@ Display the robot model in rviz.-->
         <!-- <node pkg="erp_py" type="scen_config.py" name ="MORAI_set" output="screen" />  -->
         
         <!-- <arg name="rvizconfig" default="$(find erp42_vehicle_rviz)/rviz/model.rviz" /> -->
+        <!-- <node pkg="erp_py" type="tracking_simplest.py" name="planner" args="multi-lane21 True" output="screen" /> -->
 
-        <!-- <node pkg="erp_py" type="tmp.py" name="planner" args="multi-lane21 True" output="screen" /> -->
+        <node pkg="erp_py" type="scen_config.py" name="scenarios" output="screen" />
+        <!-- <node pkg="erp_py" type="mgeo_pub.py" name ="MGeo_Map" output="screen" />  -->
+        <!-- <node pkg="erp_cpp" type="tracker" name="planner_cpp" output="screen" /> -->
+        <node pkg="erp_py" type="global_planner.py" name="global_planner" output="screen" />
+        <node pkg="erp_py" type="local_planner.py" name="local_planner" output="screen" />
+        <!-- <node pkg="erp_py" type="perception.py" name="detector" output="screen" /> -->
+        <node pkg="erp_py" type="tracker.py" name="tracker" output="screen" />
 
+        <!-- <node pkg="erp_py" type="AD.py" name="tracker" args="multi-lane21 True" output="screen" /> -->
+        <!-- <node pkg="erp42" type="Main_AD2.py" name="tracker" args="multi-lane21 True" output="screen" /> -->
+        <!-- <node pkg="erp_cpp" type="tracker" name="planner_cpp" output="screen" /> -->
+        <!-- <node pkg="erp_cpp" type="planner" name="global_planner" output="screen" /> -->
         <!-- Open rviz -->
         <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" /> -->
-        <arg name="model" default="$(find erp42_vehicle_description)/urdf/erp42_vehicle.urdf.xacro"/>
-
-        <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+        <!-- <arg name="model" default="$(find erp42_vehicle_description)/urdf/erp42_vehicle.urdf.xacro"/>
+        <param name="robot_description" command="$(find xacro)/xacro $(arg model)" /> -->
 
         <node pkg="rviz" type="rviz" name="rviz" args="-d $(find erp_py)/rviz/planner.rviz" />
 
