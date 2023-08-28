@@ -215,7 +215,7 @@ class pidControl:
         return output
     
 if __name__ == '__main__':
-    # try:
-    main_planner()
-    # except rospy.ROSInterruptException:
-        # pass
+    try:
+        main_planner()
+    except rospy.ROSInterruptException:
+        pass
