@@ -41,7 +41,7 @@ def read_txt(file_path):
 
 def main():
     rospy.init_node("global_planner")
-    file_path = "/home/rml-phat/catkin_ws/src/MORAI/erp_ros/path/kcity.txt"  # Replace with the path to your file
+    file_path = "/home/rml-phat/catkin_ws/src/MORAI/erp_py/path/multi-lane21.txt"  # Replace with the path to your file
     path_msg = read_txt(file_path)
 
     path_pub = rospy.Publisher("/global_path", Path, queue_size=1000)

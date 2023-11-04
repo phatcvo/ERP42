@@ -13,6 +13,8 @@ from geometry_msgs.msg import Point
 import numpy as np
 from math import cos,sin,sqrt,pow,atan2,pi
 import tf
+import os
+from visualization_msgs.msg import Marker
 
 global local_ref_path1
 class main_planner:
@@ -38,6 +40,33 @@ class main_planner:
         self.tracking_control = purePursuit()
         self.vel_control = pidControl()
         
+        # =================================================================
+        marker_pub = rospy.Publisher('visualization_marker', Marker, queue_size=10)
+        
+        # Create a Marker message
+        marker = Marker()
+        marker.header.frame_id = "base_link"
+        marker.header.stamp = rospy.Time.now()
+        marker.ns = "my_namespace"
+        marker.id = 0
+        marker.type = Marker.CUBE
+        marker.action = Marker.ADD
+        marker.pose.position.x = -2.0
+        marker.pose.position.y = 0.0
+        marker.pose.position.z = 0.5
+        marker.pose.orientation.x = 0.0
+        marker.pose.orientation.y = 0.0
+        marker.pose.orientation.z = 0.0
+        marker.pose.orientation.w = 1.0
+        marker.scale.x = 3
+        marker.scale.y = 2
+        marker.scale.z = 1
+        marker.color.a = 1.0
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        # =================================================================
+        
         # global lattice_path
         rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
@@ -53,14 +82,35 @@ class main_planner:
                 self.tracking_control.getPath(self.local_path)
                 self.tracking_control.getEgoStatus(self.status_msg)
                 self.ctrl_cmd_msg.steering = self.tracking_control.steering_angle()/180 * pi    
-                print("Steering_pub: ",self.ctrl_cmd_msg.steering )
-                output = self.vel_control.pid(self.local_planned_vel.velocity, self.status_msg.velocity.x)
-                print ("Accl_pub", output)
-                self.ctrl_cmd_msg.accel = output
+                # print("Steering_pub: ",self.ctrl_cmd_msg.steering )
+                self.output = self.vel_control.pid(self.local_planned_vel.velocity, self.status_msg.velocity.x)
+                # print ("Accl_pub", output)
+                self.ctrl_cmd_msg.accel = self.output
                 self.ctrl_cmd_pub.publish(self.ctrl_cmd_msg)
-                
+                # self.print_info()
                 # print("ref_path===================", self.local_path.poses.position)
+                
+                marker.header.stamp = rospy.Time.now()
+                marker_pub.publish(marker)
+                
             rate.sleep()
+    #===============================================================
+    def print_info(self):
+
+        os.system('clear')
+        print('--------------------status-------------------------')
+        print('position :{0} ,{1}, {2}'.format(self.status_msg.position.x,self.status_msg.position.y,self.status_msg.position.z))
+        print('velocity :{} km/h'.format(self.status_msg.velocity.x * 3.6))
+        print('heading :{} deg'.format(self.status_msg.heading))
+
+        print('--------------------controller-------------------------')
+        print('target steering_angle :{} deg'.format(self.ctrl_cmd_msg.steering))
+        print('target accl :{} m/s^2'.format(self.output))
+
+        print('--------------------localization-------------------------')
+        print('all waypoint size: {} '.format(len(self.local_selected_path.poses)))
+        print('current waypoint : {} '.format(self.current_waypoint))
+
     #=============================================================== 
     ## Create current waypoint and local_ref_path using local_selected_path and vehicle status_msg ##
     def get_local_selected_path_current_waypoint(self, local_selected_path, ego_status):  
@@ -122,7 +172,9 @@ class main_planner:
 
         br = tf.TransformBroadcaster()
         br.sendTransform((self.status_msg.position.x, self.status_msg.position.y, self.status_msg.position.z), tf.transformations.quaternion_from_euler(0, 0, self.status_msg.heading/180*pi),rospy.Time.now(), "gps", "map")
-# =====================================================================
+    # =====================================================================
+
+
 class purePursuit:
     def __init__(self):
         self.forward_point = Point()
@@ -166,8 +218,7 @@ class purePursuit:
             local_path_point = det_t.dot(global_path_point)  
             if local_path_point[0] > 0:  
                 dis = sqrt(pow(local_path_point[0],2) + pow(local_path_point[1],2))
-                # If the distance between a specific point and vehicle is equal to or greater than Lfd, 
-                # designate that location as a Look Forward Point        
+                # If the distance between a specific point and vehicle is equal to or greater than Lfd, designate that location as a Look Forward Point        
                 # print("current_vel: ", self.current_vel.x)       
                 if dis >= self.lfd:  
                     self.lfd = self.current_vel.x * self.kf
@@ -189,15 +240,13 @@ class purePursuit:
             self.steering = atan2((2 * self.vehicle_length * sin(theta)), self.lfd) * 180/pi #deg
             # print("Steering_point:", self.steering)
             return self.steering
-            
         else:
-            # print("Look_forward_point =:", self.is_look_forward_point)
             return 0
 
 # ====================================
 class pidControl:
     def __init__(self):
-        self.p_gain = 0.055
+        self.p_gain = 0.065
         self.i_gain = 0.00
         self.d_gain = 0.09
         self.prev_error = 0
@@ -213,6 +262,9 @@ class pidControl:
         output = p_control + self.i_control + d_control
         self.prev_error = error
         return output
+    
+    
+    
     
 if __name__ == '__main__':
     try:
